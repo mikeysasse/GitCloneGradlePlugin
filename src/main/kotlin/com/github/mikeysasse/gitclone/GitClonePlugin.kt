@@ -33,33 +33,6 @@ class GitClonePlugin : Plugin<Settings> {
         }
     }
 
-//    override fun apply(target: Project) {
-//        val extension = target.extensions.create<GitDownloadConfiguration>("git-download")
-//
-//        target.task("git-download") {
-//            doLast {
-//                val remotes = extension.remotes.map { it.resolve() }.toList()
-//                val credentials = loadCredentials(File("${target.projectDir}/secret.yaml"))
-//
-//                val duplicates = remotes.groupingBy { it.name }.eachCount().filter { it.value > 1 }
-//                check (duplicates.isEmpty()) {
-//                    val names = duplicates.map { it.key }.toList()
-//                    "Repositories cannot have the same name: $names"
-//                }
-//
-//                remotes.forEach {
-//                    val download = GitDownload(
-//                        project = project,
-//                        remote = it,
-//                        configuration = extension,
-//                        credentials = credentials
-//                    )
-//                    download.clone()
-//                }
-//            }
-//        }
-//    }
-
     private fun loadCredentials(file: File): GitCloneCredentials {
         check (file.exists()) {
             "You need to create secret.yaml file that contains the password to your git account. Use secret.example.yaml as a template."
