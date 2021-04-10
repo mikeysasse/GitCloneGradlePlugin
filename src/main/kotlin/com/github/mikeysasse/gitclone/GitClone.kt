@@ -6,40 +6,76 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
 class GitClone(
-    val project: Project,
+    val projectDir: File,
     val remote: GitRemote,
     val configuration: GitCloneConfiguration,
-    val credentials: GitCloneCredentials
+    val credentials: GitCloneCredentials?
 ) {
+
+    private lateinit var git: Git
 
     fun clone() {
         val dir = File("${project.projectDir}${configuration.path(remote)}")
-        checkWorkingDirectory(dir)
+        if (!dir.exists()) {
+            cloneRepository(dir)
+            return
+        }
+
+        git = Git.open(dir)
+
+        if (!isUpdateRequired()) {
+            println("$dir: UP-TO-DATE")
+            return
+        }
+
+        val status = git.status().call()
+        if (!status.isClean) {
+            error("Repository needs an update but it isn't clean: $dir")
+        }
+
+        // TODO instead of deleting lets instead pull?
+        if (!dir.deleteRecursively()) {
+            println("Unable to delete directory $dir")
+            return
+        }
+
         cloneRepository(dir)
-        println("${remote.url} cloned to $dir.")
     }
 
-    private fun checkWorkingDirectory(dir: File) {
-        if (dir.exists()) {
-            val git = Git.open(dir)
-            val status = git.status().call()
-            if (!status.isClean) {
-                println("Local repository $dir is not clean and cannot be replaced.")
-                return
-            } else {
-                if (!dir.deleteRecursively()) {
-                    println("Unable to delete directory $dir")
-                    return
-                }
+    private fun isUpdateRequired(): Boolean {
+        val local = git.local()
+
+        if (remote.branch != null) {
+            when {
+                local.branch != remote.branch -> return true
+                local.commit != git.getRemoteHead(local.branch) -> return true
             }
         }
+
+        if (remote.commit != null && local.commit != remote.commit) {
+            return true
+        }
+
+        return false
     }
 
     private fun cloneRepository(dir: File) {
-        Git.cloneRepository()
-            .setCredentialsProvider(UsernamePasswordCredentialsProvider(credentials.username, credentials.password))
-            .setURI(remote.url)
+        val git = Git.cloneRepository()
+
+        credentials?.let {
+            git.setCredentialsProvider(UsernamePasswordCredentialsProvider(credentials.username, credentials.password))
+        }
+
+        remote.branch?.let { git.setBranch(it) }
+
+        val cloned = git.setURI(remote.url)
             .setDirectory(dir)
             .call()
+
+        remote.commit?.let {
+            cloned.checkout().setName(it)
+            println("$dir is in a detached head.")
+        }
+        println("${remote.url} cloned to $dir.")
     }
 }
