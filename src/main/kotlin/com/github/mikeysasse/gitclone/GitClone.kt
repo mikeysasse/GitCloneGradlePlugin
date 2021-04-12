@@ -1,7 +1,6 @@
 package com.github.mikeysasse.gitclone
 
 import org.eclipse.jgit.api.Git
-import org.gradle.api.Project
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
@@ -15,7 +14,7 @@ class GitClone(
     private lateinit var git: Git
 
     fun clone() {
-        val dir = File("${project.projectDir}${configuration.path(remote)}")
+        val dir = File("${projectDir}${configuration.path(remote)}")
         if (!dir.exists()) {
             cloneRepository(dir)
             return
