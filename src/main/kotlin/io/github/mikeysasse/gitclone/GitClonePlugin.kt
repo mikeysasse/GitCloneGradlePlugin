@@ -1,4 +1,4 @@
-package com.github.mikeysasse.gitclone
+package io.github.mikeysasse.gitclone
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory

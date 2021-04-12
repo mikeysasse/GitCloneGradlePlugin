@@ -1,4 +1,4 @@
-package com.github.mikeysasse.gitclone
+package io.github.mikeysasse.gitclone
 
 import java.lang.IllegalStateException
 

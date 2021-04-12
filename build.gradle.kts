@@ -5,7 +5,7 @@ plugins {
     `java-gradle-plugin`
 }
 
-group = "com.github.mikeysasse"
+group = "io.github.mikeysasse"
 version = "1.01"
 
 repositories {
@@ -35,8 +35,8 @@ tasks {
 gradlePlugin {
     plugins {
         create("gitclone") {
-            id = "com.github.mikeysasse.gitclone"
-            implementationClass = "com.github.mikeysasse.gitclone.GitClonePlugin"
+            id = "io.github.mikeysasse.gitclone"
+            implementationClass = "io.github.mikeysasse.gitclone.GitClonePlugin"
         }
     }
 }

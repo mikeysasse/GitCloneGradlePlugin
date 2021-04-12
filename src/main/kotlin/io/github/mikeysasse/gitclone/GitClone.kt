@@ -1,4 +1,4 @@
-package com.github.mikeysasse.gitclone
+package io.github.mikeysasse.gitclone
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider

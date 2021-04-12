@@ -1,4 +1,4 @@
-package com.github.mikeysasse.gitclone
+package io.github.mikeysasse.gitclone
 
 class GitCloneCredentials {
     lateinit var username: String

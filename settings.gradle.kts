@@ -1,2 +1,2 @@
-rootProject.name = "GitDownloadGradlePlugin"
+rootProject.name = "git-clone"
 

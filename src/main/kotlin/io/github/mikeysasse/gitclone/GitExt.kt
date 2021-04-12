@@ -1,4 +1,4 @@
-package com.github.mikeysasse.gitclone
+package io.github.mikeysasse.gitclone
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Constants
@@ -17,7 +17,10 @@ fun Git.getLocalHead(): String {
 }
 
 fun Git.remote(): GitBranchMetadata {
-    return GitBranchMetadata(getLocalBranch(), getRemoteHead(getLocalBranch()))
+    return GitBranchMetadata(
+        getLocalBranch(),
+        getRemoteHead(getLocalBranch())
+    )
 }
 
 fun Git.getRemoteHead(branch: String): String {
