@@ -1,6 +1,8 @@
 package io.github.mikeysasse.gitclone
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.errors.InvalidRemoteException
+import org.eclipse.jgit.api.errors.TransportException
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
@@ -67,14 +69,28 @@ class GitClone(
 
         remote.branch?.let { git.setBranch(it) }
 
-        val cloned = git.setURI(remote.url)
-            .setDirectory(dir)
-            .call()
+        try {
+            val cloned = git.setURI(remote.url)
+                .setDirectory(dir)
+                .call()
 
-        remote.commit?.let {
-            cloned.checkout().setName(it)
-            println("$dir is in a detached head.")
+            remote.commit?.let {
+                cloned.checkout().setName(it)
+                println("$dir is in a detached head.")
+            }
+            println("${remote.url} cloned to ${dir.relativeTo(projectDir)}.")
+        } catch (e: InvalidRemoteException) {
+            notAccessible()
+        } catch (e: TransportException) {
+            if (e.message != null && e.message!!.contains("Authentication is required")) {
+                notAccessible()
+                return
+            }
+            e.printStackTrace()
         }
-        println("${remote.url} cloned to $dir.")
+    }
+
+    private fun notAccessible() {
+        System.err.println("Not accessible or repository doesn't exist: ${remote.url}")
     }
 }

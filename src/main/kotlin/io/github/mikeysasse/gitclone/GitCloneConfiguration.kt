@@ -29,7 +29,7 @@ open class GitCloneConfiguration {
     fun path(remote: GitRemote): String {
         val name = remote.name
         return when {
-            remote.path != null -> "{$remote.path}$name"
+            remote.path != null -> "${remote.path}$name"
             else -> "$directory$name" // TODO make sure this starts and ends with a forward slash
         }
     }
