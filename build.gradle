@@ -1,0 +1,105 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
+    id "org.gradle.kotlin.kotlin-dsl" version "1.4.9"
+    id 'maven-publish'
+    id 'maven'
+    id 'java-gradle-plugin'
+    id 'signing'
+}
+
+group 'io.github.mikeysasse'
+version '1.05'
+archivesBaseName = "git-clone-plugin"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    // Jgit
+    implementation "org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r"
+
+    // Jackson YAML
+    implementation "com.fasterxml.jackson.core:jackson-core:2.12.2"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.2"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'io.github.mikeysasse.gitclone'
+            implementationClass = 'io.github.mikeysasse.gitclone.GitClonePlugin'
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Git Clone Gradle Plugin'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Clones git repositories for your gradle project.'
+                url 'https://github.com/mikeysasse'
+
+                scm {
+                    connection 'scm:git:git://github.com/mikeysasse/GitCloneGradlePlugin.git'
+                    developerConnection 'scm:git:ssh://git@github.com:mikeysasse/GitCloneGradlePlugin.git'
+                    url 'git@github.com:mikeysasse/GitCloneGradlePlugin.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        name 'Michael Sasse'
+                    }
+                }
+            }
+        }
+    }
+}

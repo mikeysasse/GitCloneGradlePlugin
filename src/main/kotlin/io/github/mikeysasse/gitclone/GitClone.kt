@@ -16,31 +16,35 @@ class GitClone(
     private lateinit var git: Git
 
     fun clone() {
-        val dir = File("${projectDir}${configuration.path(remote)}")
-        if (!dir.exists()) {
+        try {
+            val dir = File("${projectDir}${configuration.path(remote)}")
+            if (!dir.exists()) {
+                cloneRepository(dir)
+                return
+            }
+
+            git = Git.open(dir)
+
+            if (!isUpdateRequired()) {
+                println("$dir: UP-TO-DATE")
+                return
+            }
+
+            val status = git.status().call()
+            if (!status.isClean) {
+                error("Repository needs an update but it isn't clean: $dir")
+            }
+
+            // TODO instead of deleting lets instead pull?
+            if (!dir.deleteRecursively()) {
+                println("Unable to delete directory $dir")
+                return
+            }
+
             cloneRepository(dir)
-            return
+        } catch (e: Throwable) {
+            handleException(e)
         }
-
-        git = Git.open(dir)
-
-        if (!isUpdateRequired()) {
-            println("$dir: UP-TO-DATE")
-            return
-        }
-
-        val status = git.status().call()
-        if (!status.isClean) {
-            error("Repository needs an update but it isn't clean: $dir")
-        }
-
-        // TODO instead of deleting lets instead pull?
-        if (!dir.deleteRecursively()) {
-            println("Unable to delete directory $dir")
-            return
-        }
-
-        cloneRepository(dir)
     }
 
     private fun isUpdateRequired(): Boolean {
@@ -69,24 +73,29 @@ class GitClone(
 
         remote.branch?.let { git.setBranch(it) }
 
-        try {
-            val cloned = git.setURI(remote.url)
-                .setDirectory(dir)
-                .call()
+        val cloned = git.setURI(remote.url)
+            .setDirectory(dir)
+            .call()
 
-            remote.commit?.let {
-                cloned.checkout().setName(it)
-                println("$dir is in a detached head.")
+        remote.commit?.let {
+            cloned.checkout().setName(it)
+            println("$dir is in a detached head.")
+        }
+        println("${remote.url} cloned to ${dir.relativeTo(projectDir)}.")
+    }
+
+    private fun handleException(e: Throwable) {
+        when (e) {
+            is InvalidRemoteException -> notAccessible()
+            is TransportException -> {
+                if (e.message != null && e.message!!.contains("Authentication is required")) {
+                    notAccessible()
+                    return
+                }
+
+                e.printStackTrace()
             }
-            println("${remote.url} cloned to ${dir.relativeTo(projectDir)}.")
-        } catch (e: InvalidRemoteException) {
-            notAccessible()
-        } catch (e: TransportException) {
-            if (e.message != null && e.message!!.contains("Authentication is required")) {
-                notAccessible()
-                return
-            }
-            e.printStackTrace()
+            else -> e.printStackTrace()
         }
     }
 
