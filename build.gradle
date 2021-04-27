@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'io.github.mikeysasse'
-version '1.05'
+version '1.07'
 archivesBaseName = "git-clone-plugin"
 
 repositories {

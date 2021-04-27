@@ -1,10 +1,18 @@
 package io.github.mikeysasse.gitclone
 
-import org.gradle.api.initialization.Settings
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.KotlinBuildScript
 import org.gradle.kotlin.dsl.configure
 
-fun Settings.gitclone(unit: GitCloneConfiguration.() -> Unit) {
+fun Project.gitclone(unit: GitCloneConfiguration.() -> Unit) {
     configure<GitCloneConfiguration> {
         unit(this)
     }
 }
+
+fun KotlinBuildScript.gitclone(unit: GitCloneConfiguration.() -> Unit) {
+    configure<GitCloneConfiguration> {
+        unit(this)
+    }
+}
+

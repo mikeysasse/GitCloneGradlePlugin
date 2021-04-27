@@ -3,23 +3,23 @@ package io.github.mikeysasse.gitclone
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.gradle.api.Plugin
-import org.gradle.api.initialization.Settings
+import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
 import java.io.File
 
-class GitClonePlugin : Plugin<Settings> {
+class GitClonePlugin : Plugin<Project> {
 
-    override fun apply(target: Settings) {
+    override fun apply(target: Project) {
         val extension = target.extensions.create<GitCloneConfiguration>("gitclone")
-        target.gradle.beforeProject {
-            clone(extension, target)
+        target.task("git-clone") {
+            doFirst {
+                println(extension.remotes.map { it.url }.toList())
+                clone(extension, target)
+            }
         }
-//        target.gradle.beforeProject {
-//            clone(extension, target)
-//        }
     }
 
-    private fun clone(extension: GitCloneConfiguration, target: Settings) {
+    private fun clone(extension: GitCloneConfiguration, target: Project) {
         val remotes = extension.remotes.map { it.resolve() }.toList()
         val credentials = loadCredentials(File("${target.rootProject.projectDir}/secret.yaml"))
 

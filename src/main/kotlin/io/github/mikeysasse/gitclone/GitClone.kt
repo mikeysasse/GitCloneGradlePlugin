@@ -53,7 +53,7 @@ class GitClone(
         if (remote.branch != null) {
             when {
                 local.branch != remote.branch -> return true
-                local.commit != git.getRemoteHead(local.branch) -> return true
+                local.commit != git.getRemoteHead(local.branch, credentials) -> return true
             }
         }
 
@@ -85,10 +85,13 @@ class GitClone(
     }
 
     private fun handleException(e: Throwable) {
+        val authorizationErrors = arrayOf(
+                "Authentication is required", "not authorized"
+        )
         when (e) {
             is InvalidRemoteException -> notAccessible()
             is TransportException -> {
-                if (e.message != null && e.message!!.contains("Authentication is required")) {
+                if (e.message != null && authorizationErrors.any { e.message!!.contains(it) }) {
                     notAccessible()
                     return
                 }
